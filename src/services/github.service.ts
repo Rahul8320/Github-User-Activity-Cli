@@ -14,7 +14,10 @@ export default class GithubService {
     this.username = username;
   }
 
-  public async getRecentActivities(details: boolean): Promise<void> {
+  public async getRecentActivities(
+    details: boolean,
+    filter?: string
+  ): Promise<void> {
     const url = GithubApiConstant.getRecentActivityUrl(this.username);
     const response = await axios.get<GithubActivity[]>(url);
     const data: GithubActivity[] = response.data;
@@ -28,11 +31,21 @@ export default class GithubService {
 
     if (details) {
       const detailsActivities = this.getDetailsActivities(data);
-      return this.printDetailsLogs(detailsActivities);
+      const filterActivities = filter
+        ? detailsActivities.filter(
+            (activity) => activity.type.toLowerCase() === filter.toLowerCase()
+          )
+        : detailsActivities;
+      return this.printDetailsLogs(filterActivities);
     }
 
     const analysisResult = this.getAnalysisResults(data);
-    return this.printEventLogs(analysisResult);
+    const filterActivities = filter
+      ? analysisResult.filter(
+          (activity) => activity.type.toLowerCase() === filter.toLowerCase()
+        )
+      : analysisResult;
+    return this.printEventLogs(filterActivities);
   }
 
   private getDetailsActivities(
@@ -93,6 +106,11 @@ export default class GithubService {
   private printDetailsLogs(analysisResult: AnalysisResultDto[]): void {
     Logger.printHeader("Recent activities:");
 
+    if (analysisResult.length === 0) {
+      Logger.warnLog("No activities found.");
+      return;
+    }
+
     const groupByMonth = this.getGroupByMonthResult(analysisResult);
 
     groupByMonth.forEach((results, month) => {
@@ -117,6 +135,11 @@ export default class GithubService {
 
   private printEventLogs(analysisResult: AnalysisResultDto[]): void {
     Logger.printHeader("Recent activities:");
+
+    if (analysisResult.length === 0) {
+      Logger.warnLog("No activities found.");
+      return;
+    }
 
     const groupByMonth = this.getGroupByMonthResult(analysisResult);
 
