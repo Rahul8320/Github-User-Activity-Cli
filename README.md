@@ -2,6 +2,8 @@
 
 A command-line interface (CLI) tool to find the most recent activity of a GitHub user.
 
+Project page url: https://roadmap.sh/projects/github-user-activity
+
 ## Table of Contents
 
 ---
@@ -18,10 +20,10 @@ A command-line interface (CLI) tool to find the most recent activity of a GitHub
 To install the GitHub User Activity CLI, first clone this github repository:
 
 ```bash
-git clone https://github.com/rahul8320/github-user-activity-cli
+git clone https://github.com/Rahul8320/Github-User-Activity-Cli.git
 ```
 
-Then move to the `github-user-activity-cli` directory and run the following command:
+Then move to the `Github-User-Activity-Cli` directory and run the following command:
 
 ```bash
 npm install
