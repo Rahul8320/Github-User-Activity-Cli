@@ -68,53 +68,75 @@ export default class GithubService {
 
   private printEventLogs(analysisResult: AnalysisResultDto[]): void {
     console.log(`\n Recent activities: \n`);
-    analysisResult.forEach((result: AnalysisResultDto) => {
-      const eventType = result.type;
-      const count = result.numberOfActions;
-      const repoName = result.repoName;
 
-      switch (eventType) {
-        case "PushEvent":
-          console.log(` - Pushed ${count} commits to ${repoName}.`);
-          break;
-        case "CreateEvent":
-          console.log(` - Created ${repoName} repository.`);
-          break;
-        case "ForkEvent":
-          console.log(` - Forked ${count} times in ${repoName}.`);
-          break;
-        case "WatchEvent":
-          console.log(` - Watched ${count} times in ${repoName}.`);
-          break;
-        case "DeleteEvent":
-          console.log(` - Deleted ${count} times in ${repoName}.`);
-          break;
-        case "PullRequestEvent":
-          console.log(` - Merged ${count} pull requests in ${repoName}.`);
-          break;
-        case "IssuesEvent":
-          console.log(` - Opened ${count} issues in ${repoName}.`);
-          break;
-        case "IssueCommentEvent":
-          console.log(` - Commented on ${count} issues in ${repoName}.`);
-          break;
-        case "ReleaseEvent":
-          console.log(` - Released ${count} times in ${repoName}.`);
-          break;
-        case "CommitCommentEvent":
-          console.log(` - Commented on ${count} commits in ${repoName}.`);
-          break;
-        case "PublicEvent":
-          console.log(` - Made public ${count} times in ${repoName}.`);
-          break;
-        case "PullRequestReviewCommentEvent":
-          console.log(` - Commented on ${count} pull requests in ${repoName}.`);
-          break;
+    // Group activities by month
+    const groupByMonth = new Map<string, AnalysisResultDto[]>();
 
-        default:
-          console.log(` - ${eventType} in ${repoName}.`);
-          break;
+    analysisResult.forEach((result) => {
+      const date = new Date(result.created_at);
+      const month = date.toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+      });
+
+      if (!groupByMonth.has(month)) {
+        groupByMonth.set(month, []);
       }
+      groupByMonth.get(month)!.push(result);
+    });
+
+    groupByMonth.forEach((results, month) => {
+      console.log(`----- ${month} -----`);
+      results.forEach((result: AnalysisResultDto) => {
+        const eventType = result.type;
+        const count = result.numberOfActions;
+        const repoName = result.repoName;
+
+        switch (eventType) {
+          case "PushEvent":
+            console.log(` - Pushed ${count} commits to ${repoName}.`);
+            break;
+          case "CreateEvent":
+            console.log(` - Created ${repoName} repository.`);
+            break;
+          case "ForkEvent":
+            console.log(` - Forked ${count} times in ${repoName}.`);
+            break;
+          case "WatchEvent":
+            console.log(` - Watched ${count} times in ${repoName}.`);
+            break;
+          case "DeleteEvent":
+            console.log(` - Deleted ${count} times in ${repoName}.`);
+            break;
+          case "PullRequestEvent":
+            console.log(` - Merged ${count} pull requests in ${repoName}.`);
+            break;
+          case "IssuesEvent":
+            console.log(` - Opened ${count} issues in ${repoName}.`);
+            break;
+          case "IssueCommentEvent":
+            console.log(` - Commented on ${count} issues in ${repoName}.`);
+            break;
+          case "ReleaseEvent":
+            console.log(` - Released ${count} times in ${repoName}.`);
+            break;
+          case "CommitCommentEvent":
+            console.log(` - Commented on ${count} commits in ${repoName}.`);
+            break;
+          case "PublicEvent":
+            console.log(` - Made public ${count} times in ${repoName}.`);
+            break;
+          case "PullRequestReviewCommentEvent":
+            console.log(
+              ` - Commented on ${count} pull requests in ${repoName}.`
+            );
+            break;
+
+          default:
+            console.log(` - ${eventType} in ${repoName}.`);
+            break;
+        }
+      });
     });
 
     console.log("\n");
