@@ -4,6 +4,10 @@ A command-line interface (CLI) tool to find the most recent activity of a GitHub
 
 Project page url: https://roadmap.sh/projects/github-user-activity
 
+## Preview
+
+![GitHub User Activity CLI](./Assets/Preview.png)
+
 ## Table of Contents
 
 ---
@@ -56,6 +60,10 @@ Replace `<username>` with the actual GitHub username you want to retrieve activi
 
 - `-u, --username <username>`: Specify the GitHub username to retrieve activity for. (required)
 
+- `-d, --details`: Show detailed activity.
+
+- `-f, --filter <filter>`: Filter activity by event type.
+
 - `-h, --help`: Display this help message.
 
 - `-V, --version`: Display the version number.
@@ -71,6 +79,22 @@ github-activity -u rahul8320
 ```
 
 This will display the most recent activity for the user `rahul8320` on GitHub.
+
+- Retrieve detailed activity for the GitHub user `rahul8320`:
+
+```bash
+github-activity -u rahul8320 -d
+```
+
+This will display the detailed activity for the user `rahul8320` on GitHub.
+
+- Filter activity by event type for the GitHub user `rahul8320`:
+
+```bash
+github-activity -u rahul8320 -f PushEvent
+```
+
+This will display only push events for the user `rahul8320` on GitHub.
 
 ## Contributing
 
