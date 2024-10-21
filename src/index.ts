@@ -1,6 +1,7 @@
+#! /usr/bin/env node
+
 import { Command } from "commander";
 import { executeOptionUsername } from "./commands";
-import chalk from "chalk";
 import { Logger } from "./lib/logger";
 
 const program = new Command();
