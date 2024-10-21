@@ -27,10 +27,10 @@ export const executeOptionUsername = async (
       return;
     }
 
-    const githubService = new GithubService(username);
+    const githubService = new GithubService(username, details, filter);
 
     console.log(`Getting recent activity for ${username}`);
-    await githubService.getRecentActivities(details, filter);
+    await githubService.getRecentActivities();
   } catch (err: any) {
     Logger.errorLog(`Error: ${err.message}`);
   }

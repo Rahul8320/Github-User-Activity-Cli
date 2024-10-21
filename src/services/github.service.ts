@@ -9,43 +9,44 @@ import chalk from "chalk";
 
 export default class GithubService {
   private username: string;
+  private details: boolean;
+  private filter: string | undefined;
 
-  constructor(username: string) {
+  constructor(username: string, details: boolean, filter: string | undefined) {
     this.username = username;
+    this.details = details;
+    this.filter = filter;
   }
 
-  public async getRecentActivities(
-    details: boolean,
-    filter?: string
-  ): Promise<void> {
+  public async getRecentActivities(): Promise<void> {
     const url = GithubApiConstant.getRecentActivityUrl(this.username);
     const response = await axios.get<GithubActivity[]>(url);
     const data: GithubActivity[] = response.data;
 
-    Logger.printHeader("Summery");
-    Logger.infoLog(`${data.length} activities found for ${this.username}.`);
+    const filteredData = this.filter
+      ? data.filter(
+          (activity) =>
+            activity.type.toLowerCase() === this.filter?.toLowerCase()
+        )
+      : data;
 
-    if (data.length === 0) {
+    Logger.printHeader("Summery");
+    Logger.infoLog(
+      `${filteredData.length} activities found for ${this.username}.`
+    );
+
+    if (filteredData.length === 0) {
+      Logger.warnLog("No activities found.");
       return;
     }
 
-    if (details) {
-      const detailsActivities = this.getDetailsActivities(data);
-      const filterActivities = filter
-        ? detailsActivities.filter(
-            (activity) => activity.type.toLowerCase() === filter.toLowerCase()
-          )
-        : detailsActivities;
-      return this.printDetailsLogs(filterActivities);
+    if (this.details) {
+      const detailsActivities = this.getDetailsActivities(filteredData);
+      return this.printDetailsLogs(detailsActivities);
     }
 
-    const analysisResult = this.getAnalysisResults(data);
-    const filterActivities = filter
-      ? analysisResult.filter(
-          (activity) => activity.type.toLowerCase() === filter.toLowerCase()
-        )
-      : analysisResult;
-    return this.printEventLogs(filterActivities);
+    const analysisResult = this.getAnalysisResults(filteredData);
+    return this.printEventLogs(analysisResult);
   }
 
   private getDetailsActivities(
@@ -72,11 +73,14 @@ export default class GithubService {
       activities,
       (activity) => activity.type
     );
-    Logger.infoLog(
-      `${groupByEventTypes.size} event types found: [${Array.from(
-        groupByEventTypes.keys()
-      ).join(", ")}]`
-    );
+
+    if (groupByEventTypes.size > 1) {
+      Logger.infoLog(
+        `${groupByEventTypes.size} event types found: [${Array.from(
+          groupByEventTypes.keys()
+        ).join(", ")}]`
+      );
+    }
 
     groupByEventTypes.forEach(
       (activitiesByEvent: GithubActivity[], eventType: string) => {
@@ -106,11 +110,6 @@ export default class GithubService {
   private printDetailsLogs(analysisResult: AnalysisResultDto[]): void {
     Logger.printHeader("Recent activities:");
 
-    if (analysisResult.length === 0) {
-      Logger.warnLog("No activities found.");
-      return;
-    }
-
     const groupByMonth = this.getGroupByMonthResult(analysisResult);
 
     groupByMonth.forEach((results, month) => {
@@ -135,11 +134,6 @@ export default class GithubService {
 
   private printEventLogs(analysisResult: AnalysisResultDto[]): void {
     Logger.printHeader("Recent activities:");
-
-    if (analysisResult.length === 0) {
-      Logger.warnLog("No activities found.");
-      return;
-    }
 
     const groupByMonth = this.getGroupByMonthResult(analysisResult);
 
