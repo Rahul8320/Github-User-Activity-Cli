@@ -16,6 +16,7 @@
   "description": "Find most recent commits of a GitHub user",
   "dependencies": {
     "axios": "^1.7.7",
+    "chalk": "^4.1.2",
     "commander": "^12.1.0",
     "figlet": "^1.8.0"
   },

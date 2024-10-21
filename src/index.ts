@@ -1,11 +1,11 @@
-const figlet = require("figlet");
-
 import { Command } from "commander";
 import { executeOptionUsername } from "./commands";
+import chalk from "chalk";
+import { Logger } from "./lib/logger";
 
 const program = new Command();
 
-console.log(figlet.textSync("GitHub User Activity"));
+Logger.printLogo("GitHub User Activity");
 
 program
   .version("1.0.0")
@@ -24,6 +24,6 @@ if (!process.argv.slice(2).length) {
 if (options.username) {
   executeOptionUsername(options.username);
 } else {
-  console.log(`Error: unknown option.`);
+  Logger.errorLog(`Error: unknown option.`);
   program.outputHelp();
 }

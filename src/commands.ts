@@ -1,9 +1,10 @@
 import GithubService from "./services/github.service";
+import { Logger } from "./lib/logger";
 
 export const executeOptionUsername = async (username: string) => {
   try {
     if (username === undefined || username === null || username.trim() === "") {
-      console.log("Please provide a username");
+      Logger.errorLog("Please provide a username");
       process.exit(1);
     }
 
@@ -12,6 +13,6 @@ export const executeOptionUsername = async (username: string) => {
     console.log(`Getting recent activity for ${username}`);
     await githubService.getRecentActivity();
   } catch (err: any) {
-    console.log(`Error: ${err.message}`);
+    Logger.errorLog(`Error: ${err.message}`);
   }
 };
