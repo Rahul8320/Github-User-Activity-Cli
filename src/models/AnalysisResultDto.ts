@@ -1,7 +1,8 @@
 export interface AnalysisResultDto {
   type: string;
-  numberOfActions: number;
+  numberOfActions?: number;
   repoName: string;
   repoUrl: string;
   created_at: string;
+  message?: string;
 }

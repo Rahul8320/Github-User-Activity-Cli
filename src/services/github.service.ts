@@ -4,6 +4,8 @@ import { GithubActivity } from "../models/GithubActivity";
 import { AnalysisResultDto } from "../models/AnalysisResultDto";
 import { groupBy } from "../lib/groupBy";
 import { Logger } from "../lib/logger";
+import { DateFormatter } from "../lib/dateFormatter";
+import chalk from "chalk";
 
 export default class GithubService {
   private username: string;
@@ -12,7 +14,7 @@ export default class GithubService {
     this.username = username;
   }
 
-  public async getRecentActivity(): Promise<void> {
+  public async getRecentActivities(details: boolean): Promise<void> {
     const url = GithubApiConstant.getRecentActivityUrl(this.username);
     const response = await axios.get<GithubActivity[]>(url);
     const data: GithubActivity[] = response.data;
@@ -24,8 +26,28 @@ export default class GithubService {
       return;
     }
 
+    if (details) {
+      const detailsActivities = this.getDetailsActivities(data);
+      return this.printDetailsLogs(detailsActivities);
+    }
+
     const analysisResult = this.getAnalysisResults(data);
     return this.printEventLogs(analysisResult);
+  }
+
+  private getDetailsActivities(
+    activities: GithubActivity[]
+  ): AnalysisResultDto[] {
+    return activities.map((activity) => {
+      return {
+        type: activity.type,
+        numberOfActions: 1,
+        repoName: activity.repo.name,
+        repoUrl: activity.repo.url,
+        created_at: activity.created_at,
+        message: activity.payload?.commits?.[0]?.message,
+      };
+    });
   }
 
   private getAnalysisResults(
@@ -68,27 +90,39 @@ export default class GithubService {
     return analysisResults;
   }
 
-  private printEventLogs(analysisResult: AnalysisResultDto[]): void {
+  private printDetailsLogs(analysisResult: AnalysisResultDto[]): void {
     Logger.printHeader("Recent activities:");
 
-    // Group activities by month
-    const groupByMonth = new Map<string, AnalysisResultDto[]>();
-
-    analysisResult.forEach((result) => {
-      const date = new Date(result.created_at);
-      const month = date.toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-
-      if (!groupByMonth.has(month)) {
-        groupByMonth.set(month, []);
-      }
-      groupByMonth.get(month)!.push(result);
-    });
+    const groupByMonth = this.getGroupByMonthResult(analysisResult);
 
     groupByMonth.forEach((results, month) => {
       Logger.printSubHeader(month);
+
+      results.forEach((result: AnalysisResultDto) => {
+        const { type, message, repoName, created_at } = result;
+        const formattedDate = DateFormatter.formatDateToCustomLocal(created_at);
+
+        console.log(
+          `[${chalk.rgb(240, 128, 128)(type)}] - ${chalk.italic.gray(
+            message ?? ""
+          )} at ${chalk.rgb(176, 196, 222)(repoName)} on ${chalk.gray(
+            formattedDate
+          )}`
+        );
+      });
+
+      console.log();
+    });
+  }
+
+  private printEventLogs(analysisResult: AnalysisResultDto[]): void {
+    Logger.printHeader("Recent activities:");
+
+    const groupByMonth = this.getGroupByMonthResult(analysisResult);
+
+    groupByMonth.forEach((results, month) => {
+      Logger.printSubHeader(month);
+
       results.forEach((result: AnalysisResultDto) => {
         const eventType = result.type;
         const count = result.numberOfActions;
@@ -143,7 +177,27 @@ export default class GithubService {
             break;
         }
       });
+
       console.log();
     });
+  }
+
+  private getGroupByMonthResult(analysisResult: AnalysisResultDto[]) {
+    const groupByMonth = new Map<string, AnalysisResultDto[]>();
+
+    analysisResult.forEach((result) => {
+      const date = new Date(result.created_at);
+      const month = date.toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+      });
+
+      if (!groupByMonth.has(month)) {
+        groupByMonth.set(month, []);
+      }
+      groupByMonth.get(month)!.push(result);
+    });
+
+    return groupByMonth;
   }
 }

@@ -12,6 +12,7 @@ program
   .version("1.0.0")
   .description("Find most recent activity of a GitHub user")
   .option("-u, --username <username>", "GitHub username")
+  .option("-d, --details", "Show detailed activity")
   .parse(process.argv);
 
 const options = program.opts();
@@ -22,8 +23,8 @@ if (!process.argv.slice(2).length) {
   process.exit(1);
 }
 
-if (options.username) {
-  executeOptionUsername(options.username);
+if (options.username || options.details) {
+  executeOptionUsername(options.username, options.details);
 } else {
   Logger.errorLog(`Error: unknown option.`);
   program.outputHelp();
